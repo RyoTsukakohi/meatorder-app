@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>未整形原料 発注アプリ | サイボク</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gd:#1a2e22;--gm:#2d5a3e;--gl:#f0f5f1;--gb:#c8d9cc;--ga:#15803d;--gu:#5a7060;
+  --al:#fef3c7;--ab:#fbbf24;--rd:#c0392b;--rl:#fdf3f2;
+  --g50:#f9fafb;--g100:#f3f4f6;--g200:#e5e7eb;--g400:#9ca3af;--g600:#4b5563;--g700:#374151;--g900:#111827;
+}
+body{font-family:'Hiragino Kaku Gothic ProN','Hiragino Sans','Yu Gothic','Meiryo',sans-serif;background:#edf2ec;min-height:100vh;color:var(--gd)}
+.hdr{background:var(--gd);padding:0 16px;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.2)}
+.hdr-in{max-width:560px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:54px}
+.hdr-co{font-size:10px;color:#8aab8f;letter-spacing:.18em;font-weight:500}
+.hdr-ti{font-size:15px;font-weight:700;color:#fff;letter-spacing:.04em}
+.hdr-bd{background:#2d5a3e;color:#a7d4af;font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;letter-spacing:.08em;border:1px solid #3a7a50}
+.pgw{background:var(--gd);padding:0 16px 12px;position:sticky;top:54px;z-index:99}
+.pgi{max-width:560px;margin:0 auto}
+.pgs{display:flex;align-items:center}
+.ps{display:flex;align-items:center;gap:3px;font-size:10px;color:#4a7a55;font-weight:500;flex:1;white-space:nowrap}
+.ps.act{color:#a7d4af}.ps.dn{color:#6aab75}
+.sd{width:18px;height:18px;border-radius:50%;background:#2d4a35;border:1.5px solid #3a6045;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#4a7a55;flex-shrink:0;transition:all .3s}
+.ps.act .sd{background:#15803d;border-color:#a7d4af;color:#fff;box-shadow:0 0 6px rgba(167,212,175,.4)}
+.ps.dn .sd{background:#2d5a3e;border-color:#6aab75;color:#6aab75}
+.sl{flex:1;height:1px;background:#2d4a35;margin:0 3px;min-width:6px}
+.sl.dn{background:#3a6a45}
+.main{max-width:560px;margin:0 auto;padding:14px 14px 100px}
+.card{background:#fff;border-radius:14px;padding:18px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.05);border:1px solid rgba(200,217,204,.5);transition:opacity .3s}
+.card.locked{opacity:.4;pointer-events:none;user-select:none}
+.ch{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px}
+.ct{font-size:14px;font-weight:700;color:var(--gd);display:flex;align-items:baseline;gap:3px}
+.cn{color:var(--ga);font-size:12px}
+.cst{font-size:10px;color:var(--g400);font-weight:500;letter-spacing:.06em}
+.cs{font-size:12px;color:var(--g400);margin-top:-8px;margin-bottom:12px;line-height:1.6}
+.ctabs{display:flex;gap:8px;margin-bottom:12px}
+.ctab{flex:1;height:36px;border:1.5px solid var(--g200);border-radius:8px;font-size:12px;font-weight:600;color:var(--g400);background:var(--g50);cursor:pointer;transition:all .2s;font-family:inherit}
+.ctab.act{border-color:var(--gd);background:var(--gl);color:var(--gd)}
+.cgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.cbtn{border:1.5px solid var(--g200);border-radius:10px;padding:10px 12px;font-size:13px;font-weight:500;color:var(--g600);background:var(--g50);cursor:pointer;text-align:left;transition:all .18s;touch-action:manipulation;font-family:inherit;position:relative;min-height:54px;display:flex;flex-direction:column;justify-content:center}
+.cn2{display:block;font-size:13px;font-weight:700;line-height:1.3;padding-right:16px}
+.ck{display:block;font-size:10px;color:var(--g400);margin-top:2px;line-height:1.2}
+.cbtn:active{transform:scale(.97)}
+.cbtn.sel{border-color:var(--gd);background:var(--gl);color:var(--gd);font-weight:700}
+.cbtn.sel::after{content:'✓';position:absolute;top:5px;right:8px;font-size:10px;color:var(--ga);font-weight:700}
+.cbtn.sel .ck{color:var(--gu)}
+.inp{width:100%;border:1.5px solid var(--g200);border-radius:10px;padding:11px 13px;font-size:15px;font-family:inherit;color:var(--g900);background:var(--g50);outline:none;transition:border-color .15s;-webkit-appearance:none}
+.inp:focus{border-color:var(--gd);background:#fff}
+.inp::placeholder{color:var(--g400);font-size:13px}
+textarea.inp{height:72px;resize:none;padding-top:10px;line-height:1.6}
+.mcat{display:flex;gap:6px;margin-bottom:10px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px}
+.mcat::-webkit-scrollbar{display:none}
+.cattab{flex-shrink:0;height:30px;padding:0 12px;border:1.5px solid var(--g200);border-radius:15px;font-size:11px;font-weight:600;color:var(--g400);background:#fff;cursor:pointer;transition:all .18s;font-family:inherit;white-space:nowrap}
+.cattab.act{border-color:var(--gd);background:var(--gd);color:#fff}
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.mbtn{border:1.5px solid var(--g200);border-radius:10px;padding:11px 10px;background:var(--g50);cursor:pointer;transition:all .18s;touch-action:manipulation;text-align:center;font-family:inherit;position:relative}
+.mbtn:active{transform:scale(.97)}
+.mbtn.sel{border-color:var(--ga);background:var(--gl)}
+.mbtn.dis{opacity:.35;cursor:not-allowed;pointer-events:none}
+.mg{font-size:9px;font-weight:700;letter-spacing:.1em;color:var(--g400);display:block;margin-bottom:1px}
+.mbtn.sel .mg{color:var(--gu)}
+.mn{font-size:14px;font-weight:700;color:var(--g700);display:block}
+.mbtn.sel .mn{color:var(--gd)}
+.mck{position:absolute;top:4px;right:6px;width:15px;height:15px;border-radius:50%;background:var(--ga);color:#fff;font-size:8px;font-weight:700;display:none;align-items:center;justify-content:center}
+.mbtn.sel .mck{display:flex}
+.slab{font-size:10px;font-weight:700;color:var(--gu);letter-spacing:.1em;margin-bottom:8px;padding-bottom:5px;border-bottom:1.5px solid var(--gb);display:flex;align-items:center;gap:5px}
+.slab::before{content:'';display:inline-block;width:3px;height:11px;background:var(--ga);border-radius:2px}
+.slist{border:1.5px solid var(--gb);border-radius:10px;overflow:hidden;margin-bottom:6px}
+.sitem{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--gb);background:#fff;animation:si .2s ease}
+.sitem:last-child{border-bottom:none}
+.sin{flex:1;font-size:13px;font-weight:600;color:var(--gd)}
+.sic{display:flex;align-items:center;gap:5px}
+.qb{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--gb);background:var(--gl);color:var(--gd);font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation;font-family:inherit;transition:all .15s}
+.qb:active{transform:scale(.92)}
+.qd{font-size:13px;font-weight:700;color:var(--gd);min-width:24px;text-align:center}
+.qu{font-size:11px;color:var(--g400);font-weight:500}
+.db{width:26px;height:26px;border-radius:50%;border:1.5px solid #fca5a5;background:#fef2f2;color:var(--rd);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation;transition:all .15s;margin-left:2px}
+.db:active{transform:scale(.92)}
+.emp{padding:16px;text-align:center;color:var(--g400);font-size:13px}
+.cnt{display:inline-flex;align-items:center;gap:3px;font-size:11px;color:var(--gu);margin-top:6px}
+.cn3{font-weight:700;color:var(--ga)}
+.cl{color:var(--g400)}
+@keyframes si{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
+.fld{margin-bottom:14px}.fld:last-child{margin-bottom:0}
+.lbl{font-size:12px;font-weight:700;color:var(--g700);letter-spacing:.04em;margin-bottom:5px;display:block}
+.req{color:var(--rd);margin-left:3px;font-size:10px}
+input[type=date].inp{font-size:16px;padding:11px 13px}
+
+/* ===== 時間ピッカー ===== */
+.tpw{border:1.5px solid var(--g200);border-radius:12px;overflow:hidden;background:var(--g50)}
+.tpd{display:flex;align-items:center;justify-content:center;height:58px;position:relative}
+.tv{font-size:28px;font-weight:700;color:var(--gd);letter-spacing:.04em}
+.tsep{font-size:24px;font-weight:700;color:var(--gd);margin:0 2px}
+.tbtns{position:absolute;right:10px;display:flex;flex-direction:column;gap:5px;align-items:flex-end}
+.teb{font-size:10px;color:var(--ga);font-weight:600;background:none;border:none;cursor:pointer;font-family:inherit;padding:2px 0;line-height:1.3;touch-action:manipulation}
+
+/* 手動入力パネル */
+.manual-panel{display:none;padding:14px;border-top:1px solid var(--g200);background:#fff}
+.manual-panel.open{display:block}
+.manual-row{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px}
+.tminp{width:72px;height:56px;border:2px solid var(--gd);border-radius:10px;font-size:30px;font-weight:700;color:var(--gd);text-align:center;background:#fff;font-family:inherit;outline:none;-webkit-appearance:none;appearance:none;-moz-appearance:textfield}
+.tminp::-webkit-inner-spin-button,.tminp::-webkit-outer-spin-button{-webkit-appearance:none}
+.tminp:focus{border-color:var(--ga);box-shadow:0 0 0 3px rgba(21,128,61,.12)}
+.tmsep{font-size:28px;font-weight:700;color:var(--gd)}
+.tmbtn{height:44px;padding:0 20px;border:none;border-radius:8px;background:var(--gd);color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;touch-action:manipulation}
+.tmbtn:active{background:var(--gm)}
+.manual-hint{text-align:center;font-size:11px;color:var(--g400)}
+
+/* ドラムロールパネル */
+.drum-panel{display:none;padding:14px 12px;border-top:1px solid var(--g200);background:#fff}
+.drum-panel.open{display:flex;align-items:flex-start;justify-content:center;gap:10px}
+.dcol{display:flex;flex-direction:column;align-items:center}
+.dlab{font-size:10px;color:var(--g400);font-weight:600;letter-spacing:.1em;margin-bottom:5px}
+.drum-col-wrap{position:relative;width:70px}
+
+/* スクロールエリア */
+.dscroll{
+  width:70px;
+  height:192px; /* 4行分(48px×4) - 中央2行が見える領域 */
+  overflow-y:scroll;
+  scroll-snap-type:y mandatory;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+.dscroll::-webkit-scrollbar{display:none}
+/* 上下のスペーサー（クリック不可） */
+.dspacer{height:72px;pointer-events:none}
+
+.di{height:48px;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:600;color:var(--g400);scroll-snap-align:center;cursor:pointer;user-select:none;transition:color .12s,font-size .12s;letter-spacing:.04em;position:relative;z-index:3}
+.di.dsel{color:var(--gd);font-size:25px;font-weight:700}
+
+/* フェード */
+.dfade-top{position:absolute;top:0;left:0;right:0;height:80px;background:linear-gradient(to bottom,rgba(255,255,255,1) 30%,rgba(255,255,255,0) 100%);z-index:4;pointer-events:none}
+.dfade-bot{position:absolute;bottom:0;left:0;right:0;height:80px;background:linear-gradient(to top,rgba(255,255,255,1) 30%,rgba(255,255,255,0) 100%);z-index:4;pointer-events:none}
+
+/* 中央選択枠 */
+.dcenter{position:absolute;top:50%;left:2px;right:2px;height:48px;margin-top:-24px;border-top:1.5px solid var(--gb);border-bottom:1.5px solid var(--gb);background:rgba(200,217,204,.18);z-index:2;border-radius:6px;pointer-events:none}
+
+.dsep{font-size:24px;font-weight:700;color:var(--gd);margin-top:28px}
+.ddone{margin-top:10px;width:100%;height:38px;border:none;border-radius:8px;background:var(--gd);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;touch-action:manipulation}
+.ddone:active{background:var(--gm)}
+
+.ibx{padding:11px 13px;border-radius:10px;font-size:12px;line-height:1.7;margin-bottom:10px}
+.ibx.amb{background:var(--al);border:1px solid var(--ab);color:#92400e}
+.ibx.grn{background:var(--gl);border:1px solid var(--gb);color:var(--gu)}
+.swrap{position:fixed;bottom:0;left:0;right:0;padding:10px 16px 22px;background:linear-gradient(to top,rgba(237,242,236,1) 65%,rgba(237,242,236,0));z-index:50}
+.sin2{max-width:560px;margin:0 auto}
+.sbtn{width:100%;height:54px;border:none;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s;background:var(--g200);color:var(--g400);letter-spacing:.04em}
+.sbtn.rdy{background:var(--gd);color:#fff;box-shadow:0 4px 20px rgba(26,46,34,.28)}
+.sbtn.rdy:active{transform:scale(.98);background:#0f1c14}
+.sbtn.lod{background:var(--gm);color:#fff;pointer-events:none}
+.cscr{display:none;min-height:100vh;background:var(--gd);align-items:center;justify-content:center;flex-direction:column;padding:40px 20px;text-align:center}
+.cscr.show{display:flex}
+.cion{width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:20px;animation:pi .4s cubic-bezier(.34,1.56,.64,1)}
+.ctit{font-size:20px;font-weight:700;color:#fff;margin-bottom:8px;line-height:1.4}
+.csub{font-size:13px;color:#8aab8f;line-height:1.8;margin-bottom:28px}
+.csum{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:18px;width:100%;max-width:400px;margin-bottom:24px;text-align:left}
+.crow{display:flex;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.07);align-items:baseline}
+.crow:last-child{border-bottom:none}
+.crl{font-size:10px;color:#6aab75;font-weight:600;letter-spacing:.08em;min-width:60px;flex-shrink:0}
+.crv{font-size:12px;color:rgba(255,255,255,.85);font-weight:500;line-height:1.6}
+.csn{font-size:12px;color:#8aab8f;padding:12px 16px;background:rgba(255,255,255,.05);border-radius:10px;max-width:400px;width:100%;display:flex;align-items:center;gap:8px}
+@keyframes pi{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
+.err{display:none;color:var(--rd);font-size:11px;font-weight:600;margin-top:5px;padding:7px 10px;background:var(--rl);border-radius:7px}
+.err.show{display:block}
+
+/* ============================================================
+   PC レスポンシブ（768px以上）
+   スマホ版のCSSは一切変更しない。追記のみ。
+   ============================================================ */
+@media (min-width: 768px) {
+
+  /* ── ヘッダー ── */
+  .hdr-in {
+    max-width: 1200px;
+    height: 62px;
+  }
+  .hdr-ti { font-size: 18px; }
+  .hdr-bd { font-size: 12px; padding: 5px 14px; }
+
+  /* ── プログレス ── */
+  .pgw { padding: 0 32px 14px; top: 62px; }
+  .pgi { max-width: 1200px; }
+  .ps  { font-size: 12px; gap: 6px; }
+  .sd  { width: 24px; height: 24px; font-size: 10px; }
+
+  /* ── 全体レイアウト: 2カラム ── */
+  .main {
+    max-width: 1200px;
+    padding: 28px 32px 60px;
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    grid-template-rows: auto auto auto auto;
+    column-gap: 24px;
+    align-items: start;
+  }
+
+  /* カード1〜3は左カラム */
+  #card1 { grid-column: 1; grid-row: 1; }
+  #card2 { grid-column: 1; grid-row: 2; }
+  #card3 { grid-column: 1; grid-row: 3; }
+  /* 確認カードは右カラムに固定（sticky） */
+  #card4 {
+    grid-column: 2;
+    grid-row: 1 / 5;
+    position: sticky;
+    top: 110px;
+    margin-bottom: 0;
+  }
+
+  /* ── カード共通 ── */
+  .card { padding: 24px; border-radius: 16px; margin-bottom: 20px; }
+  .ct   { font-size: 16px; }
+  .cs   { font-size: 13px; }
+
+  /* ── 卸先: 3列グリッド ── */
+  .cgrid { grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .cbtn  {
+    min-height: 60px;
+    transition: all .15s;
+  }
+  .cbtn:hover:not(.sel) {
+    border-color: var(--gb);
+    background: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(26,46,34,.08);
+  }
+  .cbtn.sel { box-shadow: 0 2px 8px rgba(26,46,34,.15); }
+  .cn2 { font-size: 13px; }
+  .ck  { font-size: 10px; }
+
+  /* ── タブ ── */
+  .ctab  { height: 40px; font-size: 13px; }
+  .ctab:hover:not(.act) { background: #fff; border-color: var(--gb); }
+
+  /* ── 原料: 4列グリッド ── */
+  .mgrid { grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; }
+  .mbtn  { padding: 14px 8px; }
+  .mbtn:hover:not(.sel):not(.dis) {
+    border-color: var(--gb);
+    background: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(26,46,34,.08);
+  }
+  .mbtn.sel { box-shadow: 0 2px 8px rgba(21,128,61,.12); }
+  .mn    { font-size: 14px; }
+  .mg    { font-size: 9px; }
+
+  /* カテゴリタブ */
+  .cattab { height: 34px; font-size: 12px; padding: 0 16px; }
+  .cattab:hover:not(.act) { border-color: var(--gd); color: var(--gd); }
+
+  /* 選択リスト */
+  .sitem { padding: 10px 14px; }
+  .sin   { font-size: 14px; }
+  .qb    { width: 30px; height: 30px; font-size: 16px; }
+  .db    { width: 30px; height: 30px; }
+  .qd    { font-size: 14px; min-width: 28px; }
+
+  /* ── 時間ピッカー: PC は time 入力を表示、ドラムは非表示 ── */
+  .tpw   { background: var(--g50); }
+  .tpd   { height: auto; padding: 14px 16px; justify-content: flex-start; gap: 16px; }
+  .tv    { font-size: 22px; }
+  .tsep  { font-size: 20px; }
+  /* PC用 time 入力フィールド（スマホでは非表示） */
+  .pc-time-input {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-top: 1px solid var(--g200);
+    background: #fff;
+  }
+  .pc-time-inp {
+    border: 1.5px solid var(--g200);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 22px;
+    font-weight: 700;
+    font-family: inherit;
+    color: var(--gd);
+    background: var(--g50);
+    outline: none;
+    cursor: pointer;
+    transition: border-color .15s;
+  }
+  .pc-time-inp:focus { border-color: var(--gd); background: #fff; }
+  .pc-time-label { font-size: 12px; color: var(--g400); font-weight: 600; }
+
+  /* PC では スクロール/直接入力ボタンを非表示、ドラム表示も非推奨 */
+  .tbtns { display: none; }
+  /* PC では手動入力パネルも不要（time inputに統合） */
+  .manual-panel { display: none !important; }
+  .drum-panel   { display: none !important; }
+
+  /* ── 入力フィールド ── */
+  .inp { font-size: 15px; padding: 12px 14px; }
+  .inp:hover { border-color: var(--gb); }
+  .lbl { font-size: 13px; }
+  input[type=date].inp { font-size: 15px; }
+  textarea.inp { height: 84px; }
+
+  /* ── 送信ボタン: PC はフローティングなしで最下部カードに統合 ── */
+  .swrap {
+    position: static;
+    background: none;
+    padding: 0;
+    margin-top: 0;
+  }
+  .sin2  { max-width: none; }
+  .sbtn  {
+    height: 52px;
+    font-size: 16px;
+    border-radius: 12px;
+    margin-top: 4px;
+  }
+  .sbtn:hover:not(:disabled) { opacity: .9; }
+  .sbtn.rdy:hover { background: #0f1c14; }
+
+  /* ── 確認カード（右カラム）強調 ── */
+  #card4 {
+    border: 1.5px solid var(--gb);
+    box-shadow: 0 4px 24px rgba(26,46,34,.1);
+    background: #fff;
+  }
+  #card4 .ibx.grn { font-size: 12px; }
+
+  /* ── 完了画面 ── */
+  .csum { max-width: 560px; }
+  .ctit { font-size: 28px; }
+  .csub { font-size: 15px; }
+  .crow { padding: 10px 0; }
+  .crl  { font-size: 12px; min-width: 80px; }
+  .crv  { font-size: 14px; }
+
+  /* ── ホバー全般（マウス操作向け） ── */
+  .ctab:hover:not(.act),
+  .qb:hover, .db:hover, .tmbtn:hover, .ddone:hover {
+    opacity: .85;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-in">
+    <div><div class="hdr-ti">未整形原料 発注アプリ</div></div>
+    <span class="hdr-bd">発注フォーム</span>
+  </div>
+</div>
+<div class="pgw">
+  <div class="pgi">
+    <div class="pgs">
+      <div class="ps act" id="ps1"><div class="sd" id="pd1">1</div><span>卸先</span></div>
+      <div class="sl" id="pl1"></div>
+      <div class="ps" id="ps2"><div class="sd" id="pd2">2</div><span>原料</span></div>
+      <div class="sl" id="pl2"></div>
+      <div class="ps" id="ps3"><div class="sd" id="pd3">3</div><span>出庫日時</span></div>
+      <div class="sl" id="pl3"></div>
+      <div class="ps" id="ps4"><div class="sd" id="pd4">4</div><span>確認・送信</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="main" id="main-form">
+  <div class="card" id="card1">
+    <div class="ch"><div class="ct"><span class="cn">1．</span>卸先の選択</div><span class="cst">1/4</span></div>
+    <p class="cs">取引先を選択、または新規・スポット先を入力してください</p>
+    <div class="ctabs">
+      <button class="ctab act" id="ctab-ex" onclick="switchTab('ex')">既存取引先</button>
+      <button class="ctab" id="ctab-nw" onclick="switchTab('nw')">新規・スポット</button>
+    </div>
+    <div id="pan-ex"><div class="cgrid" id="cgrid"></div></div>
+    <div id="pan-nw" style="display:none">
+      <div class="fld"><label class="lbl">会社・団体名<span class="req">*必須</span></label>
+        <input type="text" class="inp" id="f-co" placeholder="例：○○商事株式会社" oninput="onNewInput()"></div>
+      <div class="fld"><label class="lbl">担当者名</label>
+        <input type="text" class="inp" id="f-ct" placeholder="例：山田 太郎"></div>
+    </div>
+    <div class="err" id="err1">卸先を選択または入力してください</div>
+  </div>
+
+  <div class="card locked" id="card2">
+    <div class="ch"><div class="ct"><span class="cn">2．</span>原料の選択</div><span class="cst">2/4</span></div>
+    <p class="cs">GP・SGP から最大10種類まで選択し、数量を設定してください</p>
+    <div class="mcat">
+      <button class="cattab act" id="ct-GP" onclick="switchCat('GP')">🥩 GP（ゴールデンポーク）</button>
+      <button class="cattab" id="ct-SGP" onclick="switchCat('SGP')">⭐ SGP（スーパーゴールデン）</button>
+    </div>
+    <div id="mg-GP" class="mgrid"></div>
+    <div id="mg-SGP" class="mgrid" style="display:none"></div>
+    <div class="slab">選択中の原料</div>
+    <div class="slist" id="slist"><div class="emp">原料を選択してください</div></div>
+    <div class="cnt">選択中: <span class="cn3" id="cnum">0</span><span class="cl">／10 種類</span></div>
+    <div class="err" id="err2">1種類以上選択してください</div>
+  </div>
+
+  <div class="card locked" id="card3">
+    <div class="ch"><div class="ct"><span class="cn">3．</span>ミートチームからの出庫日時</div><span class="cst">3/4</span></div>
+    <div class="fld">
+      <label class="lbl">出庫日<span class="req">*必須</span></label>
+      <input type="date" class="inp" id="f-date" onchange="onDate()">
+    </div>
+    <div class="fld">
+      <label class="lbl">出庫時間<span class="req">*必須</span></label>
+      <div class="tpw">
+        <div class="tpd">
+          <span class="tv" id="th">--</span>
+          <span class="tsep">:</span>
+          <span class="tv" id="tm">--</span>
+          <div class="tbtns">
+            <button class="teb" onclick="openMode('drum')">🎡 スクロール</button>
+            <button class="teb" onclick="openMode('manual')">⌨️ 直接入力</button>
+          </div>
+        </div>
+        <!-- PC用 time 入力（PCのみ表示） -->
+        <div class="pc-time-input" id="pc-time-input" style="display:none">
+          <span class="pc-time-label">時刻を選択</span>
+          <input type="time" class="pc-time-inp" id="pc-time" onchange="onPcTime()">
+        </div>
+        <!-- 手動入力 -->
+        <div class="manual-panel" id="manual-panel">
+          <div class="manual-row">
+            <input type="number" class="tminp" id="inp-h" min="0" max="23" placeholder="09">
+            <span class="tmsep">:</span>
+            <input type="number" class="tminp" id="inp-m" min="0" max="59" placeholder="00">
+            <button class="tmbtn" onclick="applyManual()">確定</button>
+          </div>
+          <div class="manual-hint">時：0〜23　分：0〜59</div>
+        </div>
+        <!-- ドラムロール -->
+        <div class="drum-panel" id="drum-panel">
+          <div class="dcol">
+            <div class="dlab">時</div>
+            <div class="drum-col-wrap">
+              <div class="dcenter"></div>
+              <div class="dfade-top"></div>
+              <div class="dfade-bot"></div>
+              <div class="dscroll" id="dh"></div>
+            </div>
+            <button class="ddone" onclick="closeDrum()">確定</button>
+          </div>
+          <div class="dsep">:</div>
+          <div class="dcol">
+            <div class="dlab">分</div>
+            <div class="drum-col-wrap">
+              <div class="dcenter"></div>
+              <div class="dfade-top"></div>
+              <div class="dfade-bot"></div>
+              <div class="dscroll" id="dm"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="fld">
+      <label class="lbl">備考・特記事項</label>
+      <textarea class="inp" id="f-memo" placeholder="例：冷蔵便で対応希望、○○様宛てで梱包など"></textarea>
+    </div>
+    <div class="err" id="err3">出庫日と時間を入力してください</div>
+  </div>
+
+  <div class="card locked" id="card4">
+    <div class="ch"><div class="ct"><span class="cn">4．</span>内容確認</div><span class="cst">4/4</span></div>
+    <div class="ibx amb" id="cbox">フォームの入力が完了するとここに内容が表示されます。</div>
+    <div class="ibx grn">送信後、Slack #301 に通知が届き、スプレッドシートに記録されます。</div>
+    <div class="err" id="err4">送信に失敗しました。もう一度お試しください。</div>
+  </div>
+</div>
+
+<div class="swrap" id="swrap">
+  <div class="sin2"><button class="sbtn" id="sbtn" onclick="doSubmit()">入力内容を確認してください</button></div>
+</div>
+
+<div class="cscr" id="cscr">
+  <div class="cion">🎉</div>
+  <div class="ctit">発注完了！<br>ありがとうございました</div>
+  <div class="csub">ミートチームへ発注が送信されました。<br>Slack #301 に通知が届きます。</div>
+  <div class="csum" id="csum"></div>
+  <div class="csn"><span style="font-size:16px">💬</span><span>スプレッドシートへの記録も自動で行われます</span></div>
+</div>
+
+<script>
+const CUSTOMERS=[
+  {id:'kenarii',name:'韓国ビストロけなりぃ',kana:'かんこくびすとろけなりぃ'},
+  {id:'motomura',name:'ミートもとむら',kana:'みーともとむら'},
+  {id:'hanagasa',name:'はながさ',kana:'はながさ'},
+  {id:'omiya_ck',name:'大宮CK',kana:'おおみやしーけー'},
+  {id:'asian',name:'ASIAN〜味市場',kana:'あじあんあじいちば'},
+  {id:'saiwai',name:'Saiwaicho Roman',kana:'さいわいちょうろまん'},
+  {id:'coedo',name:'コエドブルワリーザレストラン',kana:'こえどぶるわりー'},
+  {id:'furusato',name:'ふるさとの湯',kana:'ふるさとのゆ'},
+  {id:'taikoku',name:'大穀本部',kana:'たいこくほんぶ'},
+  {id:'hiranuma',name:'古民家ひらぬま',kana:'こみんかひらぬま'},
+];
+const MEATS={
+  GP:['ロース','バラ','肩ロース','ウデ','外モモ','ヒレ','内もも','シンタマ'],
+  SGP:['ロース','バラ','肩ロース','ウデ','外モモ','ヒレ','内もも','シンタマ'],
+};
+const MINS=[0,5,10,15,20,25,30,35,40,45,50,55];
+const RH=48; // 1行の高さ px
+
+let st={tab:'ex',cid:null,meats:[],date:''};
+let selH=null,selM=null;
+let currentMode=null;
+
+function init(){
+  document.getElementById('cgrid').innerHTML=CUSTOMERS.map(c=>`
+    <button class="cbtn" id="cb-${c.id}" onclick="selCust('${c.id}')">
+      <span class="cn2">${c.name}</span><span class="ck">${c.kana}</span>
+    </button>`).join('');
+  ['GP','SGP'].forEach(g=>{
+    document.getElementById('mg-'+g).innerHTML=MEATS[g].map(n=>`
+      <button class="mbtn" id="mb-${g}-${n}" onclick="togMeat('${g}','${n}')">
+        <span class="mck">✓</span><span class="mg">${g}</span><span class="mn">${n}</span>
+      </button>`).join('');
+  });
+
+  // PC / スマホ判定
+  const pcMq = window.matchMedia('(min-width: 768px)');
+  if(pcMq.matches){
+    initPC();
+  } else {
+    buildDrum();
+  }
+
+  const t=new Date();
+  document.getElementById('f-date').min=`${t.getFullYear()}-${p2(t.getMonth()+1)}-${p2(t.getDate())}`;
+  ['inp-h','inp-m'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.addEventListener('keydown',e=>{if(e.key==='Enter')applyManual();});
+  });
+
+  // リサイズ対応
+  pcMq.addEventListener('change', e=>{
+    if(e.matches){ initPC(); }
+    else{
+      document.getElementById('pc-time-input').style.display='none';
+      buildDrum();
+    }
+  });
+}
+
+function initPC(){
+  // PC: time入力を表示
+  document.getElementById('pc-time-input').style.display='flex';
+  // 現在時刻をデフォルト
+  const now=new Date();
+  selH=now.getHours(); selM=now.getMinutes();
+  document.getElementById('pc-time').value=`${p2(selH)}:${p2(selM)}`;
+  updDisp();
+}
+
+function onPcTime(){
+  const val=document.getElementById('pc-time').value;
+  if(!val) return;
+  const [h,m]=val.split(':').map(Number);
+  selH=h; selM=m;
+  updDisp();
+  finalizeTime();
+}
+
+function p2(n){return String(n).padStart(2,'0')}
+
+/* ===== ドラム構築 ===== */
+/*
+  構造: [spacer 72px] [item 48px] × N [spacer 72px]
+  スクロールエリア中央(viewport center)に最も近い .di[data-v] を実測で選ぶ。
+  数式に頼らず getBoundingClientRect() で物理的に判定するためズレが発生しない。
+*/
+function buildDrum(){
+  const spacer='<div class="dspacer"></div>';
+  document.getElementById('dh').innerHTML=
+    spacer +
+    Array.from({length:24},(_,i)=>`<div class="di" data-v="${i}" onclick="pickDH(${i})">${p2(i)}</div>`).join('') +
+    spacer;
+  document.getElementById('dm').innerHTML=
+    spacer +
+    MINS.map(v=>`<div class="di" data-v="${v}" onclick="pickDM(${v})">${p2(v)}</div>`).join('') +
+    spacer;
+
+  // スクロール停止後、画面中央に最も近い項目を実測で選択
+  ['dh','dm'].forEach(id=>{
+    const el=document.getElementById(id);
+    el.addEventListener('scroll',()=>{
+      clearTimeout(el._t);
+      el._t=setTimeout(()=>{
+        const found = findCenteredItem(el);
+        if(found===null) return;
+        if(id==='dh') selDH(found, false);
+        else selDM(found, false);
+      },150);
+    },{passive:true});
+  });
+}
+
+/* スクロールエリア内で、視覚的に中央に最も近い data-v 要素を実測 */
+function findCenteredItem(scrollEl){
+  const rect = scrollEl.getBoundingClientRect();
+  const centerY = rect.top + rect.height / 2;
+  const items = scrollEl.querySelectorAll('.di[data-v]');
+  let bestVal = null;
+  let bestDist = Infinity;
+  items.forEach(item=>{
+    const r = item.getBoundingClientRect();
+    const itemCenter = r.top + r.height / 2;
+    const dist = Math.abs(itemCenter - centerY);
+    if(dist < bestDist){
+      bestDist = dist;
+      bestVal = parseInt(item.dataset.v);
+    }
+  });
+  return bestVal;
+}
+
+/* ===== モード切替 ===== */
+function openMode(mode){
+  if(currentMode===mode){currentMode=null;}
+  else{currentMode=mode;}
+  document.getElementById('drum-panel').classList.toggle('open',currentMode==='drum');
+  document.getElementById('manual-panel').classList.toggle('open',currentMode==='manual');
+  if(currentMode==='drum'){
+    setTimeout(()=>{
+      if(selH!==null) scrollToValue(document.getElementById('dh'), selH);
+      if(selM!==null) scrollToValue(document.getElementById('dm'), selM);
+    },80);
+  }
+  if(currentMode==='manual'){
+    if(selH!==null) document.getElementById('inp-h').value=selH;
+    if(selM!==null) document.getElementById('inp-m').value=selM;
+    setTimeout(()=>document.getElementById('inp-h').focus(),50);
+  }
+}
+
+/* 指定値の要素を画面中央に来るようスクロール（実測ベース） */
+function scrollToValue(scrollEl, value){
+  const target = scrollEl.querySelector(`.di[data-v="${value}"]`);
+  if(!target) return;
+  const sRect = scrollEl.getBoundingClientRect();
+  const tRect = target.getBoundingClientRect();
+  // 現在のtarget中央と、scrollEl中央の差分をscrollTopに加算
+  const centerDiff = (tRect.top + tRect.height/2) - (sRect.top + sRect.height/2);
+  scrollEl.scrollTop = scrollEl.scrollTop + centerDiff;
+}
+
+/* ===== ドラム選択 ===== */
+function selDH(h, doScroll=true){
+  selH=h;
+  document.querySelectorAll('#dh .di[data-v]').forEach(e=>e.classList.toggle('dsel',+e.dataset.v===h));
+  if(doScroll) scrollToValue(document.getElementById('dh'), h);
+  updDisp();
+}
+function selDM(m, doScroll=true){
+  selM=m;
+  document.querySelectorAll('#dm .di[data-v]').forEach(e=>e.classList.toggle('dsel',+e.dataset.v===m));
+  if(doScroll) scrollToValue(document.getElementById('dm'), m);
+  updDisp();
+}
+function pickDH(h){selDH(h,true);} // タップ
+function pickDM(m){selDM(m,true);}
+
+function closeDrum(){
+  currentMode=null;
+  document.getElementById('drum-panel').classList.remove('open');
+  finalizeTime();
+}
+
+/* ===== 手動入力 ===== */
+function applyManual(){
+  const h=parseInt(document.getElementById('inp-h').value);
+  const m=parseInt(document.getElementById('inp-m').value);
+  if(isNaN(h)||h<0||h>23){alert('時は0〜23で入力してください');return;}
+  if(isNaN(m)||m<0||m>59){alert('分は0〜59で入力してください');return;}
+  selH=h; selM=m;
+  // ドラムも同期
+  document.querySelectorAll('#dh .di[data-v]').forEach(e=>e.classList.toggle('dsel',+e.dataset.v===h));
+  const mi=MINS.findIndex(v=>v===m);
+  document.querySelectorAll('#dm .di[data-v]').forEach(e=>e.classList.remove('dsel'));
+  currentMode=null;
+  document.getElementById('manual-panel').classList.remove('open');
+  finalizeTime();
+}
+
+function finalizeTime(){
+  updDisp();chk3();updProg();upd();
+}
+function updDisp(){
+  document.getElementById('th').textContent=selH!==null?p2(selH):'--';
+  document.getElementById('tm').textContent=selM!==null?p2(selM):'--';
+}
+
+/* ===== 汎用 ===== */
+function switchTab(t){
+  st.tab=t;st.cid=null;
+  document.querySelectorAll('.cbtn').forEach(b=>b.classList.remove('sel'));
+  document.getElementById('ctab-ex').classList.toggle('act',t==='ex');
+  document.getElementById('ctab-nw').classList.toggle('act',t==='nw');
+  document.getElementById('pan-ex').style.display=t==='ex'?'':'none';
+  document.getElementById('pan-nw').style.display=t==='nw'?'':'none';
+  chk1();upd();
+}
+function selCust(id){
+  st.cid=id;
+  document.querySelectorAll('.cbtn').forEach(b=>b.classList.remove('sel'));
+  document.getElementById('cb-'+id).classList.add('sel');
+  document.getElementById('err1').classList.remove('show');
+  chk1();updProg();upd();
+}
+function onNewInput(){chk1();updProg();upd();}
+function isC1(){return st.tab==='ex'?!!st.cid:document.getElementById('f-co').value.trim().length>0;}
+function getCustLabel(){
+  if(st.tab==='ex'){const c=CUSTOMERS.find(c=>c.id===st.cid);return c?c.name:'';}
+  const co=document.getElementById('f-co').value.trim();
+  const ct=document.getElementById('f-ct').value.trim();
+  return ct?`${co}（${ct}）`:co;
+}
+function chk1(){const d=isC1();document.getElementById('card2').classList.toggle('locked',!d);if(d)setStep(1,'dn');}
+function switchCat(g){
+  document.getElementById('mg-GP').style.display=g==='GP'?'':'none';
+  document.getElementById('mg-SGP').style.display=g==='SGP'?'':'none';
+  document.getElementById('ct-GP').classList.toggle('act',g==='GP');
+  document.getElementById('ct-SGP').classList.toggle('act',g==='SGP');
+}
+function togMeat(g,n){
+  const id=`${g}-${n}`;
+  const idx=st.meats.findIndex(m=>m.id===id);
+  if(idx>=0){st.meats.splice(idx,1);document.getElementById('mb-'+id).classList.remove('sel');}
+  else{
+    if(st.meats.length>=10){alert('最大10種類まで選択できます');return;}
+    st.meats.push({id,g,n,q:1});
+    document.getElementById('mb-'+id).classList.add('sel');
+  }
+  const atLim=st.meats.length>=10;
+  document.querySelectorAll('.mbtn').forEach(b=>b.classList.toggle('dis',atLim&&!b.classList.contains('sel')));
+  renderSel();chk2();updProg();upd();
+  document.getElementById('err2').classList.remove('show');
+}
+function changeQ(id,d){const m=st.meats.find(m=>m.id===id);if(!m)return;m.q=Math.max(1,Math.min(99,m.q+d));renderSel();upd();}
+function delMeat(id){
+  const i=st.meats.findIndex(m=>m.id===id);if(i<0)return;
+  st.meats.splice(i,1);
+  const btn=document.getElementById('mb-'+id);if(btn)btn.classList.remove('sel');
+  document.querySelectorAll('.mbtn').forEach(b=>b.classList.toggle('dis',st.meats.length>=10&&!b.classList.contains('sel')));
+  renderSel();chk2();updProg();upd();
+}
+function renderSel(){
+  document.getElementById('cnum').textContent=st.meats.length;
+  const list=document.getElementById('slist');
+  if(st.meats.length===0){list.innerHTML='<div class="emp">原料を選択してください</div>';return;}
+  list.innerHTML=st.meats.map(m=>`
+    <div class="sitem">
+      <div class="sin"><span style="font-size:10px;color:#9ca3af;margin-right:3px">${m.g}</span>${m.n}</div>
+      <div class="sic">
+        <button class="qb" onclick="changeQ('${m.id}',-1)">−</button>
+        <span class="qd">${m.q}</span><span class="qu">枚</span>
+        <button class="qb" onclick="changeQ('${m.id}',1)">＋</button>
+        <button class="db" onclick="delMeat('${m.id}')">✕</button>
+      </div>
+    </div>`).join('');
+}
+function chk2(){const d=st.meats.length>0;document.getElementById('card3').classList.toggle('locked',!d);if(d)setStep(2,'dn');}
+function onDate(){st.date=document.getElementById('f-date').value;document.getElementById('err3').classList.remove('show');chk3();updProg();upd();}
+function chk3(){const d=st.date&&selH!==null&&selM!==null;document.getElementById('card4').classList.toggle('locked',!d);if(d){setStep(3,'dn');updCbox();}}
+function isAll(){return isC1()&&st.meats.length>0&&st.date&&selH!==null&&selM!==null;}
+function fmtDate(s){if(!s)return '';const[y,m,d]=s.split('-');return `${y}年${+m}月${+d}日`;}
+function updCbox(){
+  const box=document.getElementById('cbox');
+  if(!isAll()){box.innerHTML='フォームの入力が完了するとここに内容が表示されます。';box.className='ibx amb';return;}
+  const ml=st.meats.map(m=>`<span style="display:inline-block;background:rgba(26,46,34,.07);border-radius:5px;padding:2px 7px;margin:2px;font-size:11px">${m.g} ${m.n} ×${m.q}枚</span>`).join('');
+  box.className='ibx grn';
+  box.innerHTML=`<div style="margin-bottom:7px;font-weight:700;color:#1a2e22;font-size:13px">📋 発注内容確認</div>
+    <div style="margin-bottom:3px"><span style="font-size:11px;color:#5a7060">卸先：</span>${getCustLabel()}</div>
+    <div style="margin-bottom:5px"><span style="font-size:11px;color:#5a7060">出庫日時：</span>${fmtDate(st.date)} ${p2(selH)}:${p2(selM)}</div>
+    <div style="font-size:11px;color:#5a7060;margin-bottom:3px">原料一覧：</div><div>${ml}</div>`;
+}
+function updProg(){
+  if(isC1())setStep(1,'dn');else setStep(1,'act');
+  if(st.meats.length>0)setStep(2,'dn');else if(isC1())setStep(2,'act');
+  if(st.date&&selH!==null)setStep(3,'dn');else if(st.meats.length>0)setStep(3,'act');
+  if(isAll())setStep(4,'act');
+}
+function setStep(n,s){
+  document.getElementById('ps'+n).className='ps '+s;
+  document.getElementById('pd'+n).textContent=s==='dn'?'✓':n;
+  if(n<4)document.getElementById('pl'+n).classList.toggle('dn',s==='dn');
+}
+function upd(){
+  const btn=document.getElementById('sbtn');
+  const ok=isAll();
+  btn.classList.toggle('rdy',ok);
+  btn.textContent=ok?'　発注を送信する　→':'入力内容を確認してください';
+  if(ok)updCbox();
+}
+async function doSubmit(){
+  if(!isAll()){
+    if(!isC1()){document.getElementById('err1').classList.add('show');sc('card1');}
+    else if(st.meats.length===0){document.getElementById('err2').classList.add('show');sc('card2');}
+    else{document.getElementById('err3').classList.add('show');sc('card3');}
+    return;
+  }
+  const btn=document.getElementById('sbtn');
+  btn.classList.add('lod');btn.textContent='送信中...';
+  const memo=document.getElementById('f-memo').value.trim();
+  const payload={customer:getCustLabel(),meats:st.meats.map(m=>({grade:m.g,name:m.n,qty:m.q})),
+    date:st.date,date_formatted:fmtDate(st.date),time:`${p2(selH)}:${p2(selM)}`,memo,
+    submitted_at:new Date().toLocaleString('ja-JP',{timeZone:'Asia/Tokyo'})};
+  try{await fetch('https://script.google.com/macros/s/YOUR_GAS_DEPLOYMENT_ID/exec',
+    {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),mode:'no-cors'});}
+  catch(e){console.warn('GAS未設定',e.message);}
+  showDone(payload);
+}
+function showDone(p){
+  document.getElementById('main-form').style.display='none';
+  document.getElementById('swrap').style.display='none';
+  document.getElementById('cscr').classList.add('show');
+  const ml=p.meats.map(m=>`${m.grade} ${m.name} ×${m.qty}枚`).join('、');
+  document.getElementById('csum').innerHTML=`
+    <div class="crow"><span class="crl">卸先</span><span class="crv">${p.customer}</span></div>
+    <div class="crow"><span class="crl">出庫日時</span><span class="crv">${p.date_formatted} ${p.time}</span></div>
+    <div class="crow"><span class="crl">原料</span><span class="crv">${ml}</span></div>
+    ${p.memo?`<div class="crow"><span class="crl">備考</span><span class="crv">${p.memo}</span></div>`:''}
+    <div class="crow"><span class="crl">送信日時</span><span class="crv">${p.submitted_at}</span></div>`;
+}
+function sc(id){const el=document.getElementById(id);if(!el)return;window.scrollTo({top:el.getBoundingClientRect().top+window.scrollY-130,behavior:'smooth'});}
+
+document.addEventListener('DOMContentLoaded',init);
+</script>
+</body>
+</html>
