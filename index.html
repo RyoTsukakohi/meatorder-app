@@ -79,6 +79,34 @@ textarea.inp{height:72px;resize:none;padding-top:10px;line-height:1.6}
 .db{width:26px;height:26px;border-radius:50%;border:1.5px solid #fca5a5;background:#fef2f2;color:var(--rd);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation;transition:all .15s;margin-left:2px}
 .db:active{transform:scale(.92)}
 .emp{padding:16px;text-align:center;color:var(--g400);font-size:13px}
+
+/* ===== その他（自由記入） ===== */
+.free-desc{
+  font-size:12px;color:var(--g600);line-height:1.7;
+  background:var(--gl);border:1px solid var(--gb);
+  border-radius:8px;padding:10px 12px;
+  margin-bottom:10px;
+}
+.free-input-wrap{padding:4px 0 8px}
+.free-row{display:flex;gap:8px;margin-bottom:8px}
+.free-inp{flex:1;font-size:15px}
+.free-add-btn{
+  flex-shrink:0;height:46px;padding:0 18px;
+  border:none;border-radius:10px;
+  background:var(--gd);color:#fff;
+  font-size:13px;font-weight:700;
+  font-family:inherit;cursor:pointer;
+  touch-action:manipulation;
+  transition:all .18s;white-space:nowrap;
+}
+.free-add-btn:active{transform:scale(.97);background:#0f1c14}
+.free-hint{font-size:11px;color:var(--g400);line-height:1.6}
+
+@media(min-width:768px){
+  .free-inp{font-size:15px}
+  .free-add-btn{height:48px;padding:0 22px;font-size:14px}
+  .free-hint{font-size:12px}
+}
 .cnt{display:inline-flex;align-items:center;gap:3px;font-size:11px;color:var(--gu);margin-top:6px}
 .cn3{font-weight:700;color:var(--ga)}
 .cl{color:var(--g400)}
@@ -162,6 +190,23 @@ input[type=date].inp{font-size:16px;padding:11px 13px}
 .crl{font-size:10px;color:#6aab75;font-weight:600;letter-spacing:.08em;min-width:60px;flex-shrink:0}
 .crv{font-size:12px;color:rgba(255,255,255,.85);font-weight:500;line-height:1.6}
 .csn{font-size:12px;color:#8aab8f;padding:12px 16px;background:rgba(255,255,255,.05);border-radius:10px;max-width:400px;width:100%;display:flex;align-items:center;gap:8px}
+.back-btn{
+  margin-top:20px;
+  width:100%;max-width:400px;
+  height:50px;
+  border:1.5px solid rgba(255,255,255,.2);
+  border-radius:14px;
+  background:rgba(255,255,255,.08);
+  color:#a7d4af;
+  font-size:15px;font-weight:700;
+  font-family:inherit;
+  cursor:pointer;
+  letter-spacing:.05em;
+  transition:all .2s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.back-btn:hover{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.35);}
+.back-btn:active{transform:scale(.97);}
 @keyframes pi{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
 .err{display:none;color:var(--rd);font-size:11px;font-weight:600;margin-top:5px;padding:7px 10px;background:var(--rl);border-radius:7px}
 .err.show{display:block}
@@ -437,9 +482,21 @@ input[type=date].inp{font-size:16px;padding:11px 13px}
     <div class="mcat">
       <button class="cattab act" id="ct-GP" onclick="switchCat('GP')">🥩 GP（ゴールデンポーク）</button>
       <button class="cattab" id="ct-SGP" onclick="switchCat('SGP')">⭐ SGP（スーパーゴールデン）</button>
+      <button class="cattab" id="ct-FREE" onclick="switchCat('FREE')">📝 その他</button>
     </div>
     <div id="mg-GP" class="mgrid"></div>
     <div id="mg-SGP" class="mgrid" style="display:none"></div>
+    <!-- その他パネル -->
+    <div id="mg-FREE" style="display:none">
+      <div class="free-input-wrap">
+        <p class="free-desc">未整形原料以外の原料はこちらに記入ください。<br>例）ネック、FAなどの副産物</p>
+        <div class="free-row">
+          <input type="text" class="inp free-inp" id="free-name" placeholder="例：首肉（ネック）、ハツ など" maxlength="30">
+          <button class="free-add-btn" onclick="addFreeMeat()">追加</button>
+        </div>
+        <p class="free-hint">品目名を入力して「追加」をタップしてください</p>
+      </div>
+    </div>
     <div class="slab">選択中の原料</div>
     <div class="slist" id="slist"><div class="emp">原料を選択してください</div></div>
     <div class="cnt">選択中: <span class="cn3" id="cnum">0</span><span class="cl">／10 種類</span></div>
@@ -552,6 +609,7 @@ input[type=date].inp{font-size:16px;padding:11px 13px}
   <div class="csub">ミートチームへ発注が送信されました。<br>Slack #301 に通知が届きます。</div>
   <div class="csum" id="csum"></div>
   <div class="csn"><span style="font-size:16px">💬</span><span>スプレッドシートへの記録も自動で行われます</span></div>
+  <button class="back-btn" onclick="resetToTop()">↩ 続けて発注する（TOPに戻る）</button>
 </div>
 
 <script>
@@ -603,6 +661,10 @@ function init(){
   ['inp-h','inp-m'].forEach(id=>{
     const el=document.getElementById(id);
     if(el) el.addEventListener('keydown',e=>{if(e.key==='Enter')applyManual();});
+  });
+  // 自由記入: Enterで追加
+  document.getElementById('free-name').addEventListener('keydown',e=>{
+    if(e.key==='Enter'){e.preventDefault();addFreeMeat();}
   });
 
   // リサイズ対応
@@ -792,8 +854,27 @@ function chk1(){const d=isC1();document.getElementById('card2').classList.toggle
 function switchCat(g){
   document.getElementById('mg-GP').style.display=g==='GP'?'':'none';
   document.getElementById('mg-SGP').style.display=g==='SGP'?'':'none';
+  document.getElementById('mg-FREE').style.display=g==='FREE'?'':'none';
   document.getElementById('ct-GP').classList.toggle('act',g==='GP');
   document.getElementById('ct-SGP').classList.toggle('act',g==='SGP');
+  document.getElementById('ct-FREE').classList.toggle('act',g==='FREE');
+  if(g==='FREE') setTimeout(()=>document.getElementById('free-name').focus(),50);
+}
+
+function addFreeMeat(){
+  const inp=document.getElementById('free-name');
+  const name=inp.value.trim();
+  if(!name){inp.focus();return;}
+  if(st.meats.length>=10){alert('最大10種類まで選択できます');return;}
+  // 重複チェック
+  if(st.meats.find(m=>m.id==='FREE-'+name)){
+    alert('同じ品目がすでに追加されています');inp.focus();return;
+  }
+  st.meats.push({id:'FREE-'+name, g:'その他', n:name, q:1});
+  inp.value='';
+  inp.focus();
+  renderSel();chk2();updProg();upd();
+  document.getElementById('err2').classList.remove('show');
 }
 function togMeat(g,n){
   const id=`${g}-${n}`;
@@ -813,6 +894,7 @@ function changeQ(id,d){const m=st.meats.find(m=>m.id===id);if(!m)return;m.q=Math
 function delMeat(id){
   const i=st.meats.findIndex(m=>m.id===id);if(i<0)return;
   st.meats.splice(i,1);
+  // グリッドボタンがある場合のみ選択解除
   const btn=document.getElementById('mb-'+id);if(btn)btn.classList.remove('sel');
   document.querySelectorAll('.mbtn').forEach(b=>b.classList.toggle('dis',st.meats.length>=10&&!b.classList.contains('sel')));
   renderSel();chk2();updProg();upd();
@@ -823,7 +905,9 @@ function renderSel(){
   if(st.meats.length===0){list.innerHTML='<div class="emp">原料を選択してください</div>';return;}
   list.innerHTML=st.meats.map(m=>`
     <div class="sitem">
-      <div class="sin"><span style="font-size:10px;color:#9ca3af;margin-right:3px">${m.g}</span>${m.n}</div>
+      <div class="sin">
+        <span style="font-size:10px;color:${m.g==='その他'?'#d97706':'#9ca3af'};margin-right:3px;font-weight:${m.g==='その他'?700:400}">${m.g}</span>${m.n}
+      </div>
       <div class="sic">
         <button class="qb" onclick="changeQ('${m.id}',-1)">−</button>
         <span class="qd">${m.q}</span><span class="qu">枚</span>
@@ -910,6 +994,72 @@ function showDone(p){
     ${p.memo?`<div class="crow"><span class="crl">備考</span><span class="crv">${p.memo}</span></div>`:''}
     <div class="crow"><span class="crl">送信日時</span><span class="crv">${p.submitted_at}</span></div>`;
 }
+function resetToTop(){
+  // state リセット
+  st={tab:'ex',cid:null,meats:[],date:'',pdf:null};
+  selH=null; selM=null; currentMode=null;
+
+  // 卸先選択リセット
+  document.querySelectorAll('.cbtn').forEach(b=>b.classList.remove('sel'));
+  document.getElementById('f-co').value='';
+  document.getElementById('f-ct').value='';
+  switchTab('ex');
+
+  // 原料リセット
+  document.querySelectorAll('.mbtn').forEach(b=>{b.classList.remove('sel','dis');});
+  renderSel();
+  document.getElementById('cnum').textContent='0';
+  document.getElementById('free-name').value='';
+  switchCat('GP'); // タブをGPに戻す
+
+  // 日付・時刻リセット
+  document.getElementById('f-date').value='';
+  document.getElementById('f-memo').value='';
+  updDisp();
+
+  // PDF選択リセット
+  document.getElementById('pdf-yes').className='pdf-btn';
+  document.getElementById('pdf-no').className='pdf-btn';
+  document.getElementById('pdf-notice').style.display='none';
+
+  // PC time リセット
+  const pcTime=document.getElementById('pc-time');
+  if(pcTime) pcTime.value='';
+
+  // ドラム閉じる
+  document.getElementById('drum-panel').classList.remove('open');
+  document.getElementById('manual-panel').classList.remove('open');
+
+  // カードロック状態リセット
+  document.getElementById('card2').classList.add('locked');
+  document.getElementById('card3').classList.add('locked');
+  document.getElementById('card4').classList.add('locked');
+
+  // 確認ボックスリセット
+  const box=document.getElementById('cbox');
+  box.innerHTML='フォームの入力が完了するとここに内容が表示されます。';
+  box.className='ibx amb';
+
+  // エラー非表示
+  document.querySelectorAll('.err').forEach(e=>e.classList.remove('show'));
+
+  // プログレスリセット
+  [1,2,3,4].forEach(n=>setStep(n,n===1?'act':''));
+
+  // 完了画面を非表示・フォームを表示
+  document.getElementById('cscr').classList.remove('show');
+  document.getElementById('main-form').style.display='';
+  document.getElementById('swrap').style.display='';
+
+  // 送信ボタンリセット
+  const btn=document.getElementById('sbtn');
+  btn.classList.remove('rdy','lod');
+  btn.textContent='入力内容を確認してください';
+
+  // 先頭にスクロール
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
 function sc(id){const el=document.getElementById(id);if(!el)return;window.scrollTo({top:el.getBoundingClientRect().top+window.scrollY-130,behavior:'smooth'});}
 
 document.addEventListener('DOMContentLoaded',init);
