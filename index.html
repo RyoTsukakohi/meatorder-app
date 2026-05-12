@@ -103,6 +103,9 @@ textarea.inp{height:72px;resize:none;padding-top:10px;line-height:1.6}
 .sin{flex:1;font-size:13px;font-weight:600;color:var(--gd)}
 .sic{display:flex;align-items:center;gap:5px}
 .qb{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--gb);background:var(--gl);color:var(--gd);font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation;font-family:inherit;transition:all .15s}
+.q-inp{width:40px;height:26px;border:1.5px solid var(--gb);border-radius:6px;text-align:center;font-size:13px;font-weight:700;color:var(--gd);background:var(--gl);-moz-appearance:textfield;font-family:inherit;padding:0}
+.q-inp::-webkit-outer-spin-button,.q-inp::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.u-sel{height:26px;border:1.5px solid var(--gb);border-radius:6px;font-size:11px;font-weight:700;color:var(--gd);background:var(--gl);cursor:pointer;font-family:inherit;padding:0 2px}
 .qb:active{transform:scale(.92)}
 .qd{font-size:13px;font-weight:700;color:var(--gd);min-width:24px;text-align:center}
 .qu{font-size:11px;color:var(--g400);font-weight:500}
@@ -379,6 +382,8 @@ input[type=date].inp{font-size:16px;padding:11px 13px}
   .sitem { padding: 10px 14px; }
   .sin   { font-size: 14px; }
   .qb    { width: 30px; height: 30px; font-size: 16px; }
+  .q-inp { width: 44px; height: 30px; font-size: 14px; }
+  .u-sel { height: 30px; font-size: 12px; }
   .db    { width: 30px; height: 30px; }
   .qd    { font-size: 14px; min-width: 28px; }
 
@@ -659,6 +664,14 @@ const MEATS={
   GP:['ロース','バラ','肩ロース','ウデ','外モモ','ヒレ','内もも','シンタマ'],
   SGP:['ロース','バラ','肩ロース','ウデ','外モモ','ヒレ','内もも','シンタマ'],
 };
+// 品目ごとの単位（GP/SGP共通）
+const UNIT_MAP={
+  'ロース':'本','肩ロース':'本','外モモ':'本','ヒレ':'本',
+  'バラ':'枚','ウデ':'枚',
+  '内もも':'個','シンタマ':'個',
+};
+function getUnit(name){ return UNIT_MAP[name] || '枚'; }
+const UNIT_OPTIONS=['本','枚','個','kg'];
 const MINS=[0,5,10,15,20,25,30,35,40,45,50,55];
 const RH=48; // 1行の高さ px
 
@@ -900,7 +913,7 @@ function addFreeMeat(){
   if(st.meats.find(m=>m.id==='FREE-'+name)){
     alert('同じ品目がすでに追加されています');inp.focus();return;
   }
-  st.meats.push({id:'FREE-'+name, g:'その他', n:name, q:1});
+  st.meats.push({id:'FREE-'+name, g:'その他', n:name, q:1,unit:'枚'});
   inp.value='';
   inp.focus();
   renderSel();chk2();updProg();upd();
@@ -912,7 +925,7 @@ function togMeat(g,n){
   if(idx>=0){st.meats.splice(idx,1);document.getElementById('mb-'+id).classList.remove('sel');}
   else{
     if(st.meats.length>=10){alert('最大10種類まで選択できます');return;}
-    st.meats.push({id,g,n,q:1});
+    st.meats.push({id,g,n,q:1,unit:getUnit(n)});
     document.getElementById('mb-'+id).classList.add('sel');
   }
   const atLim=st.meats.length>=10;
@@ -920,7 +933,9 @@ function togMeat(g,n){
   renderSel();chk2();updProg();upd();
   document.getElementById('err2').classList.remove('show');
 }
-function changeQ(id,d){const m=st.meats.find(m=>m.id===id);if(!m)return;m.q=Math.max(1,Math.min(99,m.q+d));renderSel();upd();}
+function changeQ(id,d){const m=st.meats.find(m=>m.id===id);if(!m)return;m.q=Math.max(1,Math.min(100,m.q+d));renderSel();upd();}
+function setQInput(id,val){const m=st.meats.find(m=>m.id===id);if(!m)return;const v=parseInt(val);if(!isNaN(v))m.q=Math.max(1,Math.min(100,v));renderSel();upd();}
+function changeUnit(id,val){const m=st.meats.find(m=>m.id===id);if(!m)return;m.unit=val;upd();}
 function delMeat(id){
   const i=st.meats.findIndex(m=>m.id===id);if(i<0)return;
   st.meats.splice(i,1);
@@ -940,8 +955,9 @@ function renderSel(){
       </div>
       <div class="sic">
         <button class="qb" onclick="changeQ('${m.id}',-1)">−</button>
-        <span class="qd">${m.q}</span><span class="qu">枚</span>
+        <input class="q-inp" type="number" min="1" max="100" value="${m.q}" onchange="setQInput('${m.id}',this.value)" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
         <button class="qb" onclick="changeQ('${m.id}',1)">＋</button>
+        <select class="u-sel" onchange="changeUnit('${m.id}',this.value)">${UNIT_OPTIONS.map(u=>`<option value="${u}"${u===m.unit?' selected':''}>${u}</option>`).join('')}</select>
         <button class="db" onclick="delMeat('${m.id}')">✕</button>
       </div>
     </div>`).join('');
@@ -963,7 +979,7 @@ function fmtDate(s){if(!s)return '';const[y,m,d]=s.split('-');return `${y}年${+
 function updCbox(){
   const box=document.getElementById('cbox');
   if(!isAll()){box.innerHTML='フォームの入力が完了するとここに内容が表示されます。';box.className='ibx amb';return;}
-  const ml=st.meats.map(m=>`<span style="display:inline-block;background:rgba(26,46,34,.07);border-radius:5px;padding:2px 7px;margin:2px;font-size:11px">${m.g} ${m.n} ×${m.q}枚</span>`).join('');
+  const ml=st.meats.map(m=>`<span style="display:inline-block;background:rgba(26,46,34,.07);border-radius:5px;padding:2px 7px;margin:2px;font-size:11px">${m.g} ${m.n} ×${m.q}${m.unit||getUnit(m.n)}</span>`).join('');
   box.className='ibx grn';
   const pdfLabel = st.pdf==='yes'?'📄 あり（フォルダへ送付）':st.pdf==='no'?'なし':'未選択';
   box.innerHTML=`<div style="margin-bottom:7px;font-weight:700;color:#1a2e22;font-size:13px">📋 発注内容確認</div>
@@ -1001,7 +1017,7 @@ async function doSubmit(){
   const btn=document.getElementById('sbtn');
   btn.classList.add('lod');btn.textContent='送信中...';
   const memo=document.getElementById('f-memo').value.trim();
-  const payload={customer:getCustLabel(),meats:st.meats.map(m=>({grade:m.g,name:m.n,qty:m.q})),
+  const payload={customer:getCustLabel(),meats:st.meats.map(m=>({grade:m.g,name:m.n,qty:m.q,unit:m.unit||getUnit(m.n)})),
     date:st.date,date_formatted:fmtDate(st.date),time:`${p2(selH)}:${p2(selM)}`,
     pdf_required:st.pdf==='yes', memo,
     submitted_at:new Date().toLocaleString('ja-JP',{timeZone:'Asia/Tokyo'})};
@@ -1014,7 +1030,7 @@ function showDone(p){
   document.getElementById('main-form').style.display='none';
   document.getElementById('swrap').style.display='none';
   document.getElementById('cscr').classList.add('show');
-  const ml=p.meats.map(m=>`${m.grade} ${m.name} ×${m.qty}枚`).join('、');
+  const ml=p.meats.map(m=>`${m.grade} ${m.name} ×${m.qty}${m.unit||getUnit(m.name)}`).join('、');
   const pdfStr=p.pdf_required?'📄 あり（フォルダへ送付）':'なし';
   document.getElementById('csum').innerHTML=`
     <div class="crow"><span class="crl">卸先</span><span class="crv">${p.customer}</span></div>
