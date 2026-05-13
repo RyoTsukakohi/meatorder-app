@@ -103,7 +103,7 @@ textarea.inp{height:72px;resize:none;padding-top:10px;line-height:1.6}
 .sin{flex:1;font-size:13px;font-weight:600;color:var(--gd)}
 .sic{display:flex;align-items:center;gap:5px}
 .qb{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--gb);background:var(--gl);color:var(--gd);font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation;font-family:inherit;transition:all .15s}
-.q-inp{width:40px;height:26px;border:1.5px solid var(--gb);border-radius:6px;text-align:center;font-size:13px;font-weight:700;color:var(--gd);background:var(--gl);-moz-appearance:textfield;font-family:inherit;padding:0}
+.q-inp{width:52px;height:26px;border:1.5px solid var(--gb);border-radius:6px;text-align:center;font-size:13px;font-weight:700;color:var(--gd);background:var(--gl);-moz-appearance:textfield;font-family:inherit;padding:0}
 .q-inp::-webkit-outer-spin-button,.q-inp::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .u-sel{height:26px;border:1.5px solid var(--gb);border-radius:6px;font-size:11px;font-weight:700;color:var(--gd);background:var(--gl);cursor:pointer;font-family:inherit;padding:0 2px}
 .qb:active{transform:scale(.92)}
@@ -933,8 +933,8 @@ function togMeat(g,n){
   renderSel();chk2();updProg();upd();
   document.getElementById('err2').classList.remove('show');
 }
-function changeQ(id,d){const m=st.meats.find(m=>m.id===id);if(!m)return;m.q=Math.max(1,Math.min(100,m.q+d));renderSel();upd();}
-function setQInput(id,val){const m=st.meats.find(m=>m.id===id);if(!m)return;const v=parseInt(val);if(!isNaN(v))m.q=Math.max(1,Math.min(100,v));renderSel();upd();}
+function changeQ(id,d){const m=st.meats.find(m=>m.id===id);if(!m)return;m.q=Math.max(1,Math.min(1000,m.q+d));renderSel();upd();}
+function setQInput(id,val){const m=st.meats.find(m=>m.id===id);if(!m)return;const v=parseInt(val);if(!isNaN(v))m.q=Math.max(1,Math.min(1000,v));renderSel();upd();}
 function changeUnit(id,val){const m=st.meats.find(m=>m.id===id);if(!m)return;m.unit=val;upd();}
 function delMeat(id){
   const i=st.meats.findIndex(m=>m.id===id);if(i<0)return;
@@ -955,7 +955,7 @@ function renderSel(){
       </div>
       <div class="sic">
         <button class="qb" onclick="changeQ('${m.id}',-1)">−</button>
-        <input class="q-inp" type="number" min="1" max="100" value="${m.q}" onchange="setQInput('${m.id}',this.value)" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+        <input class="q-inp" type="number" min="1" max="1000" value="${m.q}" onchange="setQInput('${m.id}',this.value)" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
         <button class="qb" onclick="changeQ('${m.id}',1)">＋</button>
         <select class="u-sel" onchange="changeUnit('${m.id}',this.value)">${UNIT_OPTIONS.map(u=>`<option value="${u}"${u===m.unit?' selected':''}>${u}</option>`).join('')}</select>
         <button class="db" onclick="delMeat('${m.id}')">✕</button>
