@@ -1021,7 +1021,7 @@ async function doSubmit(){
     date:st.date,date_formatted:fmtDate(st.date),time:`${p2(selH)}:${p2(selM)}`,
     pdf_required:st.pdf==='yes', memo,
     submitted_at:new Date().toLocaleString('ja-JP',{timeZone:'Asia/Tokyo'})};
-  try{await fetch('https://script.google.com/macros/s/YOUR_GAS_DEPLOYMENT_ID/exec',
+  try{await fetch('https://script.google.com/macros/s/AKfycbzrgWzg0-_KMemyUeKEwzt1DtVFHTiC94ULb8HYfMuSFXduLZ1vU8XvrSqrU3jP1rJK/exec',
     {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),mode:'no-cors'});}
   catch(e){console.warn('GAS未設定',e.message);}
   showDone(payload);
